@@ -1,0 +1,231 @@
+#!/bin/bash
+
+# Define the version number
+VERSION="v0.1.0"
+
+# Function to display the manual page
+function display_manual {
+    cat <<EOF
+internsctl(1)                          User Commands                         internsctl(1)
+
+NAME
+       internsctl - Custom command for intern operations
+
+SYNOPSIS
+       internsctl [OPTIONS] [ARGS]
+
+DESCRIPTION
+       internsctl is a custom Linux command for intern operations.
+
+OPTIONS
+       --help     Display help and usage information.
+
+       --version  Display the version of internsctl.
+
+       cpu getinfo   Get CPU information (similar to lscpu command).
+
+       memory getinfo   Get memory information (similar to free command).
+
+       user create    Create a new user with the specified username.
+
+       user list      List all regular users on the server.
+
+       user list --sudo-only   List all users with sudo permissions.
+
+       file getinfo    Get information about a file.
+
+EXAMPLES
+       internsctl cpu getinfo
+           Get CPU information.
+
+       internsctl memory getinfo
+           Get memory information.
+
+       internsctl user create john_doe
+           Create a new user with the username john_doe.
+
+       internsctl user list
+           List all regular users.
+
+       internsctl user list --sudo-only
+           List all users with sudo permissions.
+
+       internsctl file getinfo hello.txt
+           Get information about the file hello.txt.
+
+       internsctl file getinfo --size hello.txt
+           Get the size of the file hello.txt.
+
+       internsctl file getinfo --permissions hello.txt
+           Get the permissions of the file hello.txt.
+
+       internsctl file getinfo --owner hello.txt
+           Get the owner of the file hello.txt.
+
+       internsctl file getinfo --last-modified hello.txt
+           Get the last modified time of the file hello.txt.
+
+AUTHOR
+       Your Name
+
+VERSION
+       $VERSION
+
+EOF
+}
+
+# Function to display help information
+function display_help {
+    echo "Usage: internsctl [OPTIONS] [ARGS]"
+    echo "  --help                  Display help and usage information."
+    echo "  --version               Display the version of internsctl."
+    echo "  cpu getinfo             Get CPU information (similar to lscpu command)."
+    echo "  memory getinfo          Get memory information (similar to free command)."
+    echo "  user create <username>  Create a new user with the specified username."
+    echo "  user list               List all regular users on the server."
+    echo "  user list --sudo-only   List all users with sudo permissions."
+    echo "  file getinfo <file>     Get information about a file."
+    echo "  file getinfo [options] <file>"
+    echo "                          Get specific information about a file."
+    echo "    --size, -s            Print file size."
+    echo "    --permissions, -p     Print file permissions."
+    echo "    --owner, -o           Print file owner."
+    echo "    --last-modified, -m   Print last modified time."
+}
+
+# Function to get file information
+function get_file_info {
+    local file="$1"
+    
+    # Check if the file exists
+    if [ ! -e "$file" ]; then
+        echo "Error: File not found."
+        exit 1
+    fi
+
+    # Get file information
+    local size=$(stat -c "%s" "$file")
+    local permissions=$(stat -c "%A" "$file")
+    local owner=$(stat -c "%U" "$file")
+    local last_modified=$(stat -c "%y" "$file")
+
+    # Print file information
+    echo "File: $file"
+    echo "Access: $permissions"
+    echo "Size(B): $size"
+    echo "Owner: $owner"
+    echo "Modify: $last_modified"
+}
+
+# Function to get specific file information
+function get_specific_file_info {
+    local file="$2"
+
+    # Check if the file exists
+    if [ ! -e "$file" ]; then
+        echo "Error: File not found."
+        exit 1
+    fi
+
+    # Get specific file information based on options
+    case "$1" in
+        --size|-s)
+            stat -c "%s" "$file"
+            ;;
+        --permissions|-p)
+            stat -c "%A" "$file"
+            ;;
+        --owner|-o)
+            stat -c "%U" "$file"
+            ;;
+        --last-modified|-m)
+            stat -c "%y" "$file"
+            ;;
+        *)
+            echo "Error: Unknown option. Use 'internsctl file getinfo --help' for usage information."
+            exit 1
+            ;;
+    esac
+}
+
+# Main script logic
+case "$1" in
+    --help)
+        display_help
+        ;;
+    --version)
+        echo "internsctl $VERSION"
+        ;;
+    cpu)
+        shift
+        case "$1" in
+            getinfo)
+                # Existing CPU information logic
+                ;;
+            *)
+                echo "Error: Unknown CPU subcommand. Use 'internsctl cpu getinfo' for CPU information."
+                exit 1
+                ;;
+        esac
+        ;;
+    memory)
+        shift
+        case "$1" in
+            getinfo)
+                # Existing memory information logic
+                ;;
+            *)
+                echo "Error: Unknown memory subcommand. Use 'internsctl memory getinfo' for memory information."
+                exit 1
+                ;;
+        esac
+        ;;
+    user)
+        shift
+        case "$1" in
+            create)
+                shift
+                # Existing user creation logic
+                ;;
+            list)
+                shift
+                # Existing user list logic
+                ;;
+            *)
+                echo "Error: Unknown user subcommand. Use 'internsctl user create <username>' or 'internsctl user list' for user management."
+                exit 1
+                ;;
+        esac
+        ;;
+    file)
+        shift
+        case "$1" in
+            getinfo)
+                shift
+                if [ -z "$1" ]; then
+                    echo "Error: File name not provided. Use 'internsctl file getinfo <file>' for file information."
+                    exit 1
+                fi
+                get_file_info "$1"
+                ;;
+            getinfo)
+                shift
+                if [ -z "$2" ]; then
+                    echo "Error: File name not provided. Use 'internsctl file getinfo <file>' for file information."
+                    exit 1
+                fi
+                get_specific_file_info "$@"
+                ;;
+            *)
+                echo "Error: Unknown file subcommand. Use 'internsctl file getinfo <file>' for file information."
+                exit 1
+                ;;
+        esac
+        ;;
+    *)
+        echo "Error: Unknown option. Use 'internsctl --help' for usage information."
+        exit 1
+        ;;
+esac
+
+exit 0
